@@ -1,0 +1,1 @@
+'Auto labā stāvoklī, par jautājumiem lūgums zvanīt, jauna tehniskā apskate. \r'
