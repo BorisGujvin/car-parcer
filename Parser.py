@@ -39,6 +39,10 @@ def get_page(sub_url: str, brand: str, exporter: Writer):
             year = prepeare_str(str(columns[4].contents[0]))
             volume = prepeare_str(str(columns[5].contents[0]))
             mileage = prepeare_str(str(columns[6].contents[0]))
+            try:
+                mileage = int(mileage)
+            except Exception as e:
+                mileage = None
             price = prepeare_str(str(columns[7].contents[0]))
             current = Advertisement(id=id[3:],
                                   provider = 'ss',
@@ -53,7 +57,8 @@ def get_page(sub_url: str, brand: str, exporter: Writer):
                                   is_dealer=False, 
                                   price=price,
                                   link='')
-            exporter.write(current)
+            if current:
+                exporter.write(current)
     navi = soup.find_all("a", class_='navi')
     for button in navi:
         attributes = button.attrs
@@ -86,9 +91,9 @@ def run_ss(exporter: Writer):
 
 def run_blocket(driver, exporter: Writer, page = 1):
     
-    url = 'https://www.blocket.se/bilar/sok'
+    url = 'https://www.blocket.se/bilar/sok?sortOrder=Äldst'
     if page > 1:
-        url += f'?page={page}'
+        url += f'&page={page}'
 
     html = get_selenium(driver, url)
     soup = BeautifulSoup(html, "html.parser")
@@ -97,9 +102,10 @@ def run_blocket(driver, exporter: Writer, page = 1):
     #ads = filter(filter_anons_link, links)
     for ad in ads:
         current = normalize_blocket_ad(ad)
-        exporter.write(current)
+        if current:
+            exporter.write(current)
     next_page = soup.find('button', attrs={'aria-label': 'Nästa sida'})
-    if next_page and page < 600:
+    if next_page and page < 599:
         print(page)
         run_blocket(driver, exporter, page + 1)
 
@@ -109,43 +115,46 @@ def get_selenium(driver, href):
     return driver.execute_script("return document.documentElement.outerHTML")
 
 def normalize_blocket_ad(ad) -> Optional[Advertisement]:
-    link = ad.attrs['href']
-    info = ad.contents[1]
-    main = info.contents[1]
-    line = info.contents[0].contents[0]
-    foretag = line.find_all('div', class_='shrink-0')
-    is_dealer = not not foretag
-    place = line.find('div', class_='TextCallout2__TextCallout2Wrapper-sc-1bir8f0-0').contents[0]
-    info_list = main.find_all('li')
-    year_wrap = info_list[0]
-    year = int(year_wrap.contents[0].contents[0]) if year_wrap else None
-
-    mileage_wrap = info_list[2]
-    mileage = blocket_normailize_mileage(mileage_wrap.contents[0].contents[0]) if mileage_wrap else None
-    main_children = main.contents
-    if len(main_children) == 2:
-        name = main.contents[0].contents[0].contents[0].contents[0]
-        price = main.contents[1].contents[0].contents[0].contents[0]
-    elif len(main_children) == 3:
-        name = main.contents[0].contents[0].contents[0].contents[0]
-        price = main.contents[2].contents[0].contents[0].contents[0]
-    else:
-        print('wrong structure')
+    try:
+        link = ad.attrs['href']
+        info = ad.contents[1]
+        main = info.contents[1]
+        line = info.contents[0].contents[0]
+        foretag = line.find_all('div', class_='shrink-0')
+        is_dealer = not not foretag
+        place = line.find('div', class_='TextCallout2__TextCallout2Wrapper-sc-1bir8f0-0').contents[0]
+        info_list = main.find_all('li')
+        year_wrap = info_list[0]
+        year = int(year_wrap.contents[0].contents[0]) if year_wrap else None
+        mileage_wrap = info_list[2] if len(info_list) > 2 else None
+        mileage = blocket_normailize_mileage(mileage_wrap.contents[0].contents[0]) if mileage_wrap else None
+        main_children = main.contents
+        if len(main_children) == 2:
+            name = main.contents[0].contents[0].contents[0].contents[0]
+            price = main.contents[1].contents[0].contents[0].contents[0]
+        elif len(main_children) == 3:
+            name = main.contents[0].contents[0].contents[0].contents[0]
+            price = main.contents[2].contents[0].contents[0].contents[0]
+        else:
+            print('wrong structure')
+            return
+        return Advertisement(id=blocket_get_id(link),
+                            provider='blocket',
+                            brand=name.split(' ')[0],
+                            model='',
+                            name=name,
+                            photo_link='',
+                            year=year,
+                            volume='',
+                            mileage=mileage, 
+                            city=place,
+                            is_dealer=is_dealer,
+                            price=price,
+                            link=link)
+    except Exception as e:
+        print('wrong data')
         return
-    return Advertisement(id=blocket_get_id(link),
-                        provider='blocket',
-                        brand=name.split(' ')[0],
-                        model='',
-                        name=name,
-                        photo_link='',
-                        year=year,
-                        volume='',
-                        mileage=mileage, 
-                        city=place,
-                        is_dealer=is_dealer,
-                        price=price,
-                        link=link)
-
+    
 def blocket_get_id(s: str) -> str:
     return s.split('/')[-1]
 
