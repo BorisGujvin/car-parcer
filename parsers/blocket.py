@@ -14,9 +14,9 @@ class BlocketParcer(AbstractParcer):
         cService = webdriver.ChromeService(executable_path='chromedriver.exe')
         self.driver = webdriver.Chrome(service=cService)
         self.exporter = exporter
-        self.run_blocket()
+        self.run()
 
-    def run_blocket(self, page = 1):
+    def run(self, page = 1):
         
         url = 'https://www.blocket.se/bilar/sok' #?sortOrder=Äldst'
         if page > 1:
@@ -27,20 +27,20 @@ class BlocketParcer(AbstractParcer):
         container = soup.find('div', class_='scroll-container')
         ads = container.find_all('a')
         for ad in ads:
-            current = self.normalize_blocket_ad(ad)
+            current = self.normalize_ad(ad)
             if current:
                 self.exporter.write(current)
         next_page = soup.find('button', attrs={'aria-label': 'Nästa sida'})
         if next_page and page < 599:
             print(page)
-            self.run_blocket(page + 1)
+            self.run(page + 1)
 
     def get_selenium(self, href):
         self.driver.get(href)
         time.sleep(1)
         return self.driver.execute_script("return document.documentElement.outerHTML")
 
-    def normalize_blocket_ad(self, ad) -> Optional[Advertisement]:
+    def normalize_ad(self, ad) -> Optional[Advertisement]:
         try:
             link = ad.attrs['href']
             info = ad.contents[1]
