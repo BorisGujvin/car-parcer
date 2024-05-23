@@ -5,11 +5,13 @@ from parsers.carinfo import CarInfoParcer
 from parsers.mobile_de import MobileDeParcer
 import time
 import sys
+from model import Advertisement
 
 
 if __name__ == '__main__':
     start = time.time()
-    exporter = CSVWriter()
+    exporter = MySQLWriter()
+
     arg = sys.argv[-1]
     if arg == 'blocket':
         parcer = BlocketParcer()
