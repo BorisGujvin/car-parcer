@@ -20,9 +20,8 @@ class MobileDeParser(AbstractParser):
         options = Options()
         options.add_argument('--headless=new')
         options.add_argument("--window-size=2560,1440")
-        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36")
+        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.4147.125 Safari/537.36")
         self.driver = webdriver.Chrome(options=options)
-        self.driver.set_window_size(1080,800)
         
     def parse(self, exporter: Writer):
         self.exporter = exporter
