@@ -33,6 +33,7 @@ def worker():
         if not request:
             print('No jobb')
             time.sleep(10)
+            store.connection.commit()
             continue
         for r in request:
             output = current_thread().name + ': ' + r + ' '
@@ -45,7 +46,7 @@ def worker():
 
 
 if __name__ == '__main__':
-    num_workers = 4
+    num_workers = 1
 
     for i in range(num_workers):
          t = Thread(target=worker)
