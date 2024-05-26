@@ -1,4 +1,5 @@
-from .abstract import AbstractParcer
+from typing import Tuple
+from .abstract import AbstractParser
 from exporter import Writer
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -7,23 +8,25 @@ from model import Advertisement
 import time
 from datetime import datetime
 from bs4 import BeautifulSoup
-import json
 import re
+import json
 
 
-class MobileDeParcer(AbstractParcer):
+class MobileDeParser(AbstractParser):
 
-    def parce(self, exporter: Writer):
+    def __init__(self) -> None:
         print('mobile.de')
-
-        cService = webdriver.ChromeService(executable_path='chromedriver.exe')
+        #cService = webdriver.ChromeService(executable_path='chromedriver.exe')
         options = Options()
-        options.add_experimental_option("excludeSwitches", ['enable-automation'])
-        self.driver = webdriver.Chrome(service=cService, options=options)
-        self.driver.delete_all_cookies()
+        options.add_argument('--headless=new')
+        options.add_argument("--window-size=2560,1440")
+        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36")
+        self.driver = webdriver.Chrome(options=options)
+        self.driver.set_window_size(1080,800)
+        
+    def parse(self, exporter: Writer):
         self.exporter = exporter
         self.run()
-
 
     def run(self):
         url = 'https://suchen.mobile.de'
@@ -38,18 +41,42 @@ class MobileDeParcer(AbstractParcer):
             for brand in group.parent.find_all('a'):
                 brand_name = brand.next
                 url = brand.attrs['href']
-                print('     ' + brand_name)
-                self.get_branch(url)
+                self.get_branch(url, brand_name)
 
-    def get_selenium(self, href):
+    def update_info(self, url) -> tuple[str,str]:
+        self.get_selenium(url)
+        self.driver.delete_all_cookies()
+        self.driver.refresh()
+        time.sleep(4)
+        show_page = self.driver.execute_script("return document.documentElement.outerHTML")
+        root = BeautifulSoup(show_page, "html.parser")
+        
+        imgs = root.find_all('img', class_='thumbnail')
+        links = [obj.attrs.get('src') or obj.attrs.get('data-lazy') for obj in imgs if obj.attrs.get('class') == ['thumbnail']]
+        status = 'active'
+
+        deleted_wraper = root.find('div', class_='vip-error__title')
+        if deleted_wraper:
+            text = str(deleted_wraper.contents[1].contents[0])
+            if text == 'Dieses Fahrzeug ist nicht mehr verfügbar':
+                status = 'closed'
+            else:
+                status = 'error: ' + text
+        return status, json.dumps([re.sub(r'rule=mo-[\d]+.jpg', 'rule=mo-1024.jpg', link) for link in links])
+
+
+    def get_selenium(self, href: str):
         self.driver.get(href)
-       # time.sleep(3)
         return self.driver.execute_script("return document.documentElement.outerHTML")
     
-    def get_branch(self, url: str):
+    def get_branch(self, url: str, branch: str = 'unknown'):
+        current_url = url
         html = self.get_selenium(url)
         secondary = False
         while True:
+            param = [i for i in current_url.split('?')[-1].split('&') if i.startswith('pageNumber')] or ['pageNumber=1']
+            page = param[0].split('=')[-1]
+            print(branch + ' page: ' + page)
             root = BeautifulSoup(html, "html.parser")
             list = root.find('article', attrs={'data-testid': 'result-list-container'})
             results = list.find_all('a') if secondary else list.find_all('span')
@@ -67,6 +94,7 @@ class MobileDeParcer(AbstractParcer):
                 time.sleep(7)
                 self.agree()
                 html = self.driver.execute_script("return document.documentElement.outerHTML")
+                current_url = str(self.driver.execute_script('return window.location.href'))
                 secondary = True
             except Exception:
                 return
@@ -93,8 +121,6 @@ class MobileDeParcer(AbstractParcer):
                 link = link.split('?')[0]
             else:
                 link = link.split('&')[0]
-            # self.driver.switch_to.new_window()
-            # self.driver.get(link)
         else:
             ekraned_name = name.replace("'", r"\'")
             try:
@@ -110,21 +136,14 @@ class MobileDeParcer(AbstractParcer):
             self.driver.switch_to.window(new_window)
             link = str(self.driver.execute_script('return window.location.href')).split('&')[0]
 
-        # self.driver.delete_all_cookies()
-        # self.driver.refresh()
-        # time.sleep(4)
-        # show_page = self.driver.execute_script("return document.documentElement.outerHTML")
-        # root = BeautifulSoup(show_page, "html.parser")
-        
-        # imgs = root.find_all('img', class_='thumbnail')
-        # links = [obj.attrs.get('src') or obj.attrs.get('data-lazy') for obj in imgs if obj.attrs.get('class') == ['thumbnail']]
-        # images = json.dumps([re.sub(r'rule=mo-[\d]+.jpg', 'rule=mo-1024.jpg', link) for link in links])
             self.driver.close()
             self.driver.switch_to.window(self.index_window)
 
+        provider_id = self.get_id(link)
+        
         return Advertisement(
             provider_name='mobile.de',
-            provider_id=self.get_id(link),
+            provider_id=provider_id,
             provider_link_url=link,
             brand=name.split(' ')[0],
             car_name=name,
@@ -135,7 +154,7 @@ class MobileDeParcer(AbstractParcer):
             vat=0,
             currency='EUR',
             mileage=mileage,
-            images='{}',
+            images=None,
             year=year,
             engine=engine,
             is_dealer=False,

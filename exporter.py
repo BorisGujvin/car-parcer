@@ -4,7 +4,6 @@ from psycopg2 import sql, connect
 import pymysql
 import paramiko
 from sshtunnel import SSHTunnelForwarder
-from paramiko import SSHClient
 from model import Advertisement
 from store import AdvertisementStore
 
@@ -84,11 +83,11 @@ class MySQLWriter(Writer):
 
     def write(self, a: Advertisement) -> None:
         if self.store.search(a=a):
-            print('updated:' + a.provider_id)
             self.store.mark_active(a=a)
+            print(a.provider_id + ' updated')
         else:
-            print('created:' + a.provider_id)
             self.store.create(a=a)
+            print(a.provider_id + ' created')
 
     
             

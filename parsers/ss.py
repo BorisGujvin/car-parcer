@@ -3,10 +3,10 @@ import re
 from bs4 import BeautifulSoup
 from exporter import Writer
 from model import Advertisement
-from .abstract import AbstractParcer
+from .abstract import AbstractParser
 
 
-class SSParcer(AbstractParcer):
+class SSParcer(AbstractParser):
 
     root_url = 'https://www.ss.com'
 

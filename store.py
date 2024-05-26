@@ -7,7 +7,7 @@ class AdvertisementStore:
         self.connection = connection
 
     def create(self, a: Advertisement):   
-        template = ("""INSERT INTO leads (
+        template = ("""INSERT INTO ads (
                     provider_name, 
                     provider_id,
                     provider_lead_url,
@@ -72,14 +72,34 @@ class AdvertisementStore:
             self.connection.commit()
 
     def search(self, a: Advertisement):
-        template = f"SELECT id FROM leads WHERE provider_name ='{a.provider_name}' AND provider_id = '{a.provider_id}'"
+        template = f"SELECT id FROM ads WHERE provider_name ='{a.provider_name}' AND provider_id = '{a.provider_id}'"
         with self.connection.cursor() as cursor:
             cursor.execute(template)
             result = cursor.fetchone()
             return result[0] if result else None
 
     def mark_active(self, a: Advertisement):
-        template = f"UPDATE leads SET active_at = '{datetime.now()}' WHERE provider_name ='{a.provider_name}' AND provider_id = '{a.provider_id}'"
+        template = f"UPDATE ads SET active_at = '{datetime.now()}' WHERE provider_name ='{a.provider_name}' AND provider_id = '{a.provider_id}'"
+        with self.connection.cursor() as cursor:
+            cursor.execute(template)
+            self.connection.commit()
+
+    def get_tasks(self):
+        template1 = "SELECT provider_lead_url FROM ads WHERE images IS NULL LIMIT 10"
+        with self.connection.cursor() as cursor:
+            cursor.execute(template1)
+            result = cursor.fetchall()
+            result = [r[0] for r in result] if result else None
+            if not result or len(result) < 10:
+                return
+            template2 = f"UPDATE ads SET images = '[]' WHERE provider_lead_url IN ('{'\', \''.join(result)}')"        
+            cursor.execute(template2)
+            self.connection.commit()
+        return result
+        
+
+    def update_lead(self, r: str, status: str, images: str):
+        template = f"UPDATE ads SET status = '{status}', images = '{images}' WHERE provider_lead_url ='{r}'"
         with self.connection.cursor() as cursor:
             cursor.execute(template)
             self.connection.commit()

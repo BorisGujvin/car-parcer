@@ -1,5 +1,5 @@
 from typing import Optional
-from .abstract import AbstractParcer
+from .abstract import AbstractParser
 from exporter import Writer
 from selenium import webdriver
 from model import Advertisement
@@ -7,9 +7,9 @@ import time
 from bs4 import BeautifulSoup
 
 
-class CarInfoParcer(AbstractParcer):
+class CarInfoParser(AbstractParser):
 
-    def parce(self, exporter: Writer):
+    def parse(self, exporter: Writer):
         print('CarInfo')
         cService = webdriver.ChromeService(executable_path='chromedriver.exe')
         self.driver = webdriver.Chrome(service=cService)

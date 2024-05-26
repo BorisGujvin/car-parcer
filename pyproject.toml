@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "parse sites"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -18,6 +19,7 @@ scrapy-playwright = "^0.0.34"
 sshtunnel = "^0.4.0"
 paramiko = "^3.4.0"
 pymysql = "^1.1.1"
+
 
 
 [build-system]

@@ -1,5 +1,5 @@
 from typing import Optional
-from .abstract import AbstractParcer
+from .abstract import AbstractParser
 from exporter import Writer
 from selenium import webdriver
 import time
@@ -8,9 +8,9 @@ from bs4 import BeautifulSoup
 
 
 
-class BlocketParcer(AbstractParcer):
+class BlocketParser(AbstractParser):
 
-    def parce(self, exporter: Writer):
+    def parse(self, exporter: Writer):
         cService = webdriver.ChromeService(executable_path='chromedriver.exe')
         self.driver = webdriver.Chrome(service=cService)
         self.exporter = exporter
