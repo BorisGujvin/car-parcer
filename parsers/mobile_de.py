@@ -1,4 +1,5 @@
 from typing import Tuple
+from exception import NeedResetException
 from .abstract import AbstractParser
 from exporter import Writer
 from selenium import webdriver
@@ -66,7 +67,11 @@ class MobileDeParser(AbstractParser):
 
     def get_selenium(self, href: str):
         self.driver.get(href)
-        return self.driver.execute_script("return document.documentElement.outerHTML")
+        try:
+            return self.driver.execute_script("return document.documentElement.outerHTML")
+        except Exception as e:
+            print(str(e))
+            raise NeedResetException
     
     def get_branch(self, url: str, branch: str = 'unknown'):
         current_url = url
@@ -84,19 +89,25 @@ class MobileDeParser(AbstractParser):
                 a = self.get_advertisement(result, secondary)
                 if a:
                     self.exporter.write(a)
-            xpath = "//button[@data-testid = 'pagination:next']"
-            button_next = self.driver.find_element(By.XPATH, xpath)
-            try:
-                self.driver.execute_script("arguments[0].scrollIntoView();", button_next)
-                self.driver.execute_script("window.scrollBy(0, -100);")
-                button_next.click()
-                time.sleep(7)
-                self.agree()
-                html = self.driver.execute_script("return document.documentElement.outerHTML")
-                current_url = str(self.driver.execute_script('return window.location.href'))
-                secondary = True
-            except Exception:
+            html, current_url, secondary = self.next_page()
+            if not html:
                 return
+
+    def next_page(self):
+        xpath = "//button[@data-testid = 'pagination:next']"
+        button_next = self.driver.find_element(By.XPATH, xpath)
+        try:
+            self.driver.execute_script("arguments[0].scrollIntoView();", button_next)
+            self.driver.execute_script("window.scrollBy(0, -100);")
+            button_next.click()
+            time.sleep(7)
+            self.agree()
+            html = self.driver.execute_script("return document.documentElement.outerHTML")
+            current_url = str(self.driver.execute_script('return window.location.href'))
+            secondary = True
+            return html, current_url,secondary 
+        except Exception:
+            return None, None, None
 
 
     def get_advertisement(self, result, secondary) -> Advertisement:
@@ -133,7 +144,11 @@ class MobileDeParser(AbstractParser):
             windows = self.driver.window_handles
             new_window = windows[-1]
             self.driver.switch_to.window(new_window)
-            link = str(self.driver.execute_script('return window.location.href')).split('&')[0]
+            try:
+                link = str(self.driver.execute_script('return window.location.href')).split('&')[0]
+            except Exception as e:
+                print(str(e))
+                raise NeedResetException
 
             self.driver.close()
             self.driver.switch_to.window(self.index_window)

@@ -1,0 +1,2 @@
+class NeedResetException(Exception):
+    pass

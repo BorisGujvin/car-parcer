@@ -5,8 +5,7 @@ from parsers.carinfo import CarInfoParser
 from parsers.mobile_de import MobileDeParser
 import time
 import sys
-from model import Advertisement
-
+from exception import NeedResetException
 
 if __name__ == '__main__':
     arg = sys.argv[-1]
@@ -22,9 +21,12 @@ if __name__ == '__main__':
         print('argument can be "blocket" or "ss" or "carinfo" or "mobile.de"')
         exit()
     while True:
-        exporter = MySQLWriter()
-        start = time.time()
-        parser.parse(exporter=exporter)
-        finish = time.time()
-        print (f"Time: {finish - start}")
-        exporter.exit()
+        try:
+            exporter = MySQLWriter()
+            start = time.time()
+            parser.parse(exporter=exporter)
+            finish = time.time()
+            print (f"Time: {finish - start}")
+            exporter.exit()
+        except NeedResetException:
+            continue
