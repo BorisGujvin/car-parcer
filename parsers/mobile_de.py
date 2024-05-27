@@ -12,6 +12,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import re
 import json
+from multiprocessing import Process
 
 
 class MobileDeParser(AbstractParser):
@@ -23,7 +24,7 @@ class MobileDeParser(AbstractParser):
 
     def create_driver(self):
         options = Options()
-        options.add_argument('--headless=new')
+        #options.add_argument('--headless=new')
         options.add_argument("--window-size=2560,1440")
         options.add_argument("user-agent=Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.4147.125 Safari/537.36")
         self.driver = webdriver.Chrome(options=options)
@@ -48,7 +49,7 @@ class MobileDeParser(AbstractParser):
                 url = brand.attrs['href']
                 self.get_branch(url, brand_name)
 
-    def update_info(self, url) -> tuple[str,str]:
+    def update_info(self, url) -> tuple[str,str, bool]:
         self.get_selenium(url)
         self.driver.delete_all_cookies()
         self.driver.refresh()
@@ -67,7 +68,9 @@ class MobileDeParser(AbstractParser):
                 status = 'closed'
             else:
                 status = 'error: ' + text
-        return status, json.dumps([re.sub(r'rule=mo-[\d]+.jpg', 'rule=mo-1024.jpg', link) for link in links])
+        dealer_wraper = root.find('a', text='Privatanbieter')
+        is_dealer = (dealer_wraper == None)
+        return status, json.dumps([re.sub(r'rule=mo-[\d]+.jpg', 'rule=mo-1024.jpg', link) for link in links]), is_dealer
 
 
     def get_selenium(self, href: str):
