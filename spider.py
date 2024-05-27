@@ -46,7 +46,7 @@ def worker():
 
 
 if __name__ == '__main__':
-    num_workers = 1
+    num_workers = 5
 
     for i in range(num_workers):
          t = Thread(target=worker)
