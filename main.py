@@ -9,18 +9,18 @@ from exception import NeedResetException
 
 if __name__ == '__main__':
     arg = sys.argv[-1]
-    if arg == 'blocket':
-        parser = BlocketParser()
-    elif arg == 'ss':
-        parser = SSParcer()
-    elif arg == 'carinfo':
-        parser = CarInfoParser()
-    elif arg == 'mobile.de':
-        parser = MobileDeParser()
-    else:
-        print('argument can be "blocket" or "ss" or "carinfo" or "mobile.de"')
-        exit()
     while True:
+        if arg == 'blocket':
+            parser = BlocketParser()
+        elif arg == 'ss':
+            parser = SSParcer()
+        elif arg == 'carinfo':
+            parser = CarInfoParser()
+        elif arg == 'mobile.de':
+            parser = MobileDeParser()
+        else:
+            print('argument can be "blocket" or "ss" or "carinfo" or "mobile.de"')
+            exit()
         try:
             exporter = MySQLWriter()
             start = time.time()

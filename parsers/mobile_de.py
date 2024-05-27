@@ -1,10 +1,11 @@
-from typing import Tuple
+from typing import Optional
 from exception import NeedResetException
 from .abstract import AbstractParser
 from exporter import Writer
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
 from model import Advertisement
 import time
 from datetime import datetime
@@ -18,11 +19,15 @@ class MobileDeParser(AbstractParser):
     def __init__(self) -> None:
         print('mobile.de')
         #cService = webdriver.ChromeService(executable_path='chromedriver.exe')
+        self.create_driver()
+
+    def create_driver(self):
         options = Options()
         options.add_argument('--headless=new')
         options.add_argument("--window-size=2560,1440")
         options.add_argument("user-agent=Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.4147.125 Safari/537.36")
         self.driver = webdriver.Chrome(options=options)
+        self.driver.set_page_load_timeout(30)
         
     def parse(self, exporter: Writer):
         self.exporter = exporter
@@ -66,12 +71,16 @@ class MobileDeParser(AbstractParser):
 
 
     def get_selenium(self, href: str):
-        self.driver.get(href)
         try:
+            self.driver.get(href)
             return self.driver.execute_script("return document.documentElement.outerHTML")
-        except Exception as e:
-            print(str(e))
-            raise NeedResetException
+        except TimeoutException as e:
+            self.create_driver()
+            self.driver.get(href)
+            return self.driver.execute_script("return document.documentElement.outerHTML")
+
+        except Exception:
+            return
     
     def get_branch(self, url: str, branch: str = 'unknown'):
         current_url = url
@@ -83,6 +92,8 @@ class MobileDeParser(AbstractParser):
             print(branch + ' page: ' + page)
             root = BeautifulSoup(html, "html.parser")
             list = root.find('article', attrs={'data-testid': 'result-list-container'})
+            if not list:
+                raise NeedResetException
             results = list.find_all('a') if secondary else list.find_all('span')
             self.index_window = self.driver.current_window_handle
             for result in results:
@@ -110,11 +121,11 @@ class MobileDeParser(AbstractParser):
             return None, None, None
 
 
-    def get_advertisement(self, result, secondary) -> Advertisement:
+    def get_advertisement(self, result, secondary) -> Optional[Advertisement]:
         try:
             if not result.attrs['data-testid'].startswith('result-listing'):
                 return
-        except Exception as e:
+        except Exception:
             return
         name = result.find('h2').contents[0]
         attributes = str(result.find('div', attrs={'data-testid':'listing-details-attributes'}))
@@ -146,9 +157,10 @@ class MobileDeParser(AbstractParser):
             self.driver.switch_to.window(new_window)
             try:
                 link = str(self.driver.execute_script('return window.location.href')).split('&')[0]
-            except Exception as e:
-                print(str(e))
+            except TimeoutException as e:
                 raise NeedResetException
+            except Exception:
+                return
 
             self.driver.close()
             self.driver.switch_to.window(self.index_window)
