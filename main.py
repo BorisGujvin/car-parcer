@@ -26,7 +26,8 @@ if __name__ == '__main__':
             start = time.time()
             parser.parse(exporter=exporter)
             finish = time.time()
-            print (f"Time: {finish - start}")
             exporter.exit()
         except NeedResetException:
             continue
+        print('successfully finished')
+        print (f"Time: {finish - start}")

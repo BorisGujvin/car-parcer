@@ -98,8 +98,8 @@ class AdvertisementStore:
         return result
         
 
-    def update_lead(self, r: str, status: str, images: str):
-        template = f"UPDATE ads SET status = '{status}', images = '{images}' WHERE provider_lead_url ='{r}'"
+    def update_lead(self, r: str, status: str, images: str, is_dealer: bool):
+        template = f"UPDATE ads SET status = '{status}', images = '{images}' , is_dealer = {1 if is_dealer else 0 } WHERE provider_lead_url ='{r}'"
         with self.connection.cursor() as cursor:
             cursor.execute(template)
             self.connection.commit()

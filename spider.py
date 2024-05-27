@@ -37,16 +37,16 @@ def worker():
             continue
         for r in request:
             output = current_thread().name + ': ' + r + ' '
-            status, images = parser.update_info(r)
+            status, images, is_dealer = parser.update_info(r)
             output += ' : ' + status
-            store.update_lead(r, status, images)
+            store.update_lead(r, status, images, is_dealer)
             print(output)
         finish = time.time()
         print (f"Time: {finish - start}")
 
 
 if __name__ == '__main__':
-    num_workers = 3
+    num_workers = 1
 
     for i in range(num_workers):
          t = Thread(target=worker)
