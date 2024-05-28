@@ -24,32 +24,31 @@ def worker():
         port=tunnel.local_bind_port
     )
     store = AdvertisementStore(connection=connection)
-
-    
+   
     while True:
         start = time.time()
         with lock:
-            request = store.get_tasks()
+            request = store.get_old_tasks()
         if not request:
-            print('No jobb')
+            print('No active ads')
             time.sleep(10)
             store.connection.commit()
             continue
         for r in request:
-            output = current_thread().name + ': ' + r + ' '
-            status, images, is_dealer, transmission, fuel, first_reg, color = parser.update_info(r)
+            output = current_thread().name + ' : ' + r
+            status, _, _, _, _, _, _ = parser.update_info(r)
             output += ' : ' + status
-            store.update_lead(r, status, images, is_dealer, transmission, fuel, first_reg, color)
+            store.update_lead(r, status=status)
             print(output)
         finish = time.time()
         print (f"Time: {finish - start}")
 
 
 if __name__ == '__main__':
-    num_workers = 4
+    num_workers = 1
 
     for i in range(num_workers):
          t = Thread(target=worker)
-         t.name = 'Spider No ' + str(i)
+         t.name = 'Closer No ' + str(i)
          t.start()
          time.sleep(1)
