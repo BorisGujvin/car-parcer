@@ -160,8 +160,8 @@ class MobileDeParser(AbstractParser):
             self.driver.switch_to.window(new_window)
             try:
                 link = str(self.driver.execute_script('return window.location.href')).split('&')[0]
-            except TimeoutException as e:
-                raise NeedResetException
+           # except TimeoutException as e:
+           #     raise NeedResetException
             except Exception:
                 return
 
@@ -186,8 +186,8 @@ class MobileDeParser(AbstractParser):
             images=None,
             year=year,
             engine=engine,
-            is_dealer=False,
-            city='unknown'
+            is_dealer=-1,
+            city=None
         )
     
     def agree(self):

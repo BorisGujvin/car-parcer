@@ -28,6 +28,7 @@ if __name__ == '__main__':
             finish = time.time()
             exporter.exit()
         except NeedResetException:
+            print('TimeOut Exception')
             continue
         print('successfully finished')
         print (f"Time: {finish - start}")
