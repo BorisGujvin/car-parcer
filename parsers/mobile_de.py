@@ -53,7 +53,7 @@ class MobileDeParser(AbstractParser):
         self.get_selenium(url)
         self.driver.delete_all_cookies()
         self.driver.refresh()
-        time.sleep(4)
+        time.sleep(3)
         show_page = self.driver.execute_script("return document.documentElement.outerHTML")
         root = BeautifulSoup(show_page, "html.parser")
         
@@ -70,7 +70,17 @@ class MobileDeParser(AbstractParser):
                 status = 'error: ' + text
         dealer_wraper = root.find('a', text='Privatanbieter')
         is_dealer = (dealer_wraper == None)
-        return status, json.dumps([re.sub(r'rule=mo-[\d]+.jpg', 'rule=mo-1024.jpg', link) for link in links]), is_dealer
+
+        transmision_wraper = root.find('div', class_='key-feature key-feature--transmission')
+        transmission = transmision_wraper.contents[1].contents[1].contents[0] if transmision_wraper else None
+        fuel_wraper = root.find('div', {"id": "fuel-v"})
+        fuel = fuel_wraper.contents[0] if fuel_wraper else None
+        first_reg_wraper = root.find('div', {"id": "firstRegistration-v"})
+        first_reg = first_reg_wraper.contents[0] if first_reg_wraper else None
+        color_wraper = root.find('div', {'id': 'manufacturerColorName-v'})
+        color = color_wraper.contents[0] if color_wraper else None
+        images = json.dumps([re.sub(r'rule=mo-[\d]+.jpg', 'rule=mo-1024.jpg', link) for link in links])
+        return status, images, is_dealer, transmission, fuel, first_reg, color
 
 
     def get_selenium(self, href: str):
