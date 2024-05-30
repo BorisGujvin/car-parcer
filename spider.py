@@ -10,7 +10,7 @@ lock = Lock()
 
 def worker():
     parser = MobileDeParser()
-    mypkey = paramiko.RSAKey.from_private_key_file('C:/Users/think/.ssh/id_rsa', 'K0r0stel!')
+    mypkey = paramiko.RSAKey.from_private_key_file('./.ssh/id_rsa', 'K0r0stel!')
     tunnel = SSHTunnelForwarder(('68.183.217.93', 22),
         ssh_username='forge',
         ssh_pkey=mypkey,
@@ -40,10 +40,11 @@ def worker():
         store_time = 0
         for r in request:
             output = current_thread().name + ': ' + r + ' '
+            start = time.time()
             status, images, is_dealer, transmission, fuel, first_reg, color = parser.update_info(r)
             output += ' : ' + status
             scrap_iter_time = time.time()
-            store.update_lead(r, status, images, is_dealer)
+            store.update_lead(r, status, images, is_dealer, transmission, fuel, first_reg, color)
             store_iter_time = time.time()
             print(output)
             scrap_time += scrap_iter_time - start
