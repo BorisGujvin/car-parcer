@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS ads(
     transmission VARCHAR(50),
     fuel VARCHAR(50),
     first_reg VARCHAR(50),
-    color VARCHAR(50)
+    color VARCHAR(50),
     engine VARCHAR(50),
     is_dealer SMALLINT,
     created_at TIMESTAMP,    

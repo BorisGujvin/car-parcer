@@ -80,6 +80,7 @@ class MobileDeParser(AbstractParser):
         color_wraper = root.find('div', {'id': 'manufacturerColorName-v'})
         color = color_wraper.contents[0] if color_wraper else None
         images = json.dumps([re.sub(r'rule=mo-[\d]+.jpg', 'rule=mo-1024.jpg', link) for link in links])
+        
         return status, images, is_dealer, transmission, fuel, first_reg, color
 
 
