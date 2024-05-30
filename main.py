@@ -1,4 +1,4 @@
-from exporter import Writer, PostgreDBWriter, CSVWriter, MySQLWriter
+from exporter import Writer, CSVWriter, MySQLWriter
 from parsers.blocket import BlocketParser
 from parsers.ss import SSParcer
 from parsers.carinfo import CarInfoParser
