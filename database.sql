@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS ads(
     images JSON,
     year BIGINT,
     transmission VARCHAR(50),
-    fuel VARCHAR(50),
+    fuel VARCHAR(100),
     first_reg VARCHAR(50),
     color VARCHAR(50),
     engine VARCHAR(50),
@@ -22,5 +22,6 @@ CREATE TABLE IF NOT EXISTS ads(
     active_at TIMESTAMP,
     PRIMARY KEY (`id`) USING BTREE,
     CONSTRAINT uniq_id_name UNIQUE (provider_id, provider_name),
-    CONSTRAINT unique_url UNIQUE (provider_lead_url)
+    CONSTRAINT unique_url UNIQUE (provider_lead_url),
+    INDEX USING BTREE (status)
 );

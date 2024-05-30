@@ -71,14 +71,14 @@ class AdvertisementStore:
             self.connection.commit()
 
     def get_tasks(self):
-        template1 = "SELECT provider_lead_url FROM ads WHERE images IS NULL LIMIT 10"
+        template1 = "SELECT provider_lead_url FROM ads WHERE status IS NULL LIMIT 10"
         with self.connection.cursor() as cursor:
             cursor.execute(template1)
             result = cursor.fetchall()
             result = [r[0] for r in result] if result else None
             if not result or len(result) < 10:
                 return
-            template2 = f"UPDATE ads SET images = '[]' WHERE provider_lead_url IN ('{'\', \''.join(result)}')"        
+            template2 = f"UPDATE ads SET status = 'checking' WHERE provider_lead_url IN ('{'\', \''.join(result)}')"        
             cursor.execute(template2)
             self.connection.commit()
         return result
