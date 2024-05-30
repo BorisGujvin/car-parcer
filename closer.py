@@ -2,27 +2,15 @@ from store import AdvertisementStore
 from threading import Thread, current_thread, Lock
 from parsers.mobile_de import MobileDeParser
 import time
-import paramiko
-from sshtunnel import SSHTunnelForwarder
-import pymysql
+from model import UpdateAdRequest
+from db_connection import get_connection
+
 
 lock = Lock()
 
 def worker():
     parser = MobileDeParser()
-    mypkey = paramiko.RSAKey.from_private_key_file('C:/Users/think/.ssh/id_rsa', 'K0r0stel!')
-    tunnel = SSHTunnelForwarder(('68.183.217.93', 22),
-        ssh_username='forge',
-        ssh_pkey=mypkey,
-        remote_bind_address=('127.0.0.1', 3306)
-    )
-    tunnel.start()
-    connection = pymysql.connect(
-        host='127.0.0.1',
-        user='forge',
-        passwd='nSvGDEPZwsE625VhpPco', db='forge',
-        port=tunnel.local_bind_port
-    )
+    connection = get_connection()
     store = AdvertisementStore(connection=connection)
    
     while True:
@@ -34,12 +22,14 @@ def worker():
             time.sleep(10)
             store.connection.commit()
             continue
+        updated = []
         for r in request:
             output = current_thread().name + ' : ' + r
-            status, _, _, _, _, _, _ = parser.update_info(r)
-            output += ' : ' + status
-            store.update_lead(r, status=status)
+            d = parser.update_info(r)
+            updated.append(UpdateAdRequest(status=d.status, url=d.url))
+            output += ' : ' + d.status
             print(output)
+        store.update_lead(request=updated)
         finish = time.time()
         print (f"Time: {finish - start}")
 

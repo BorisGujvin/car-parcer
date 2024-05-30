@@ -6,14 +6,14 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-from model import Advertisement
+from model import Advertisement, UpdateAdRequest
 import time
 from datetime import datetime
 from bs4 import BeautifulSoup
 import re
 import json
 from multiprocessing import Process
-
+# https://github.com/password123456/setup-selenium-with-chrome-driver-on-ubuntu_debian
 
 class MobileDeParser(AbstractParser):
 
@@ -49,7 +49,7 @@ class MobileDeParser(AbstractParser):
                 url = brand.attrs['href']
                 self.get_branch(url, brand_name)
 
-    def update_info(self, url) -> tuple[str,str, bool]:
+    def update_info(self, url) -> UpdateAdRequest:
         self.get_selenium(url)
         self.driver.delete_all_cookies()
         self.driver.refresh()
@@ -80,7 +80,15 @@ class MobileDeParser(AbstractParser):
         color_wraper = root.find('div', {'id': 'manufacturerColorName-v'})
         color = color_wraper.contents[0] if color_wraper else None
         images = json.dumps([re.sub(r'rule=mo-[\d]+.jpg', 'rule=mo-1024.jpg', link) for link in links])
-        return status, images, is_dealer, transmission, fuel, first_reg, color
+        
+        return UpdateAdRequest(url=url,
+                               status=status,
+                                images=images,
+                                is_dealer=is_dealer, 
+                                transmission=transmission,
+                                fuel=fuel,
+                                first_reg=first_reg,
+                                color=color)
 
 
     def get_selenium(self, href: str):

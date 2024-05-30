@@ -21,4 +21,14 @@ class Advertisement(NamedTuple):
     seller: Optional[str] = None
     is_dealer: Optional[bool] = None
     city: Optional[str] = None
-    #'https://suchen.mobile.de/fahrzeuge/details.html?id=393037792
+
+
+class UpdateAdRequest(NamedTuple):
+    url: Optional[str] = None
+    status: Optional[str] = None
+    images: Optional[str] = None
+    is_dealer: Optional[str] = None
+    transmission: Optional[str] = None
+    fuel: Optional[str] = None
+    first_reg: Optional[str] = None
+    color: Optional[str] = None

@@ -1,5 +1,5 @@
 from typing import Optional
-from model import Advertisement
+from model import Advertisement, UpdateAdRequest
 from datetime import datetime
 
 
@@ -21,7 +21,6 @@ class AdvertisementStore:
                     images,
                     year,
                     engine,
-                    is_dealer,
                     created_at,
                     active_at
                 ) VALUES (
@@ -37,7 +36,6 @@ class AdvertisementStore:
                     %(images)s,
                     %(year)s,
                     %(engine)s,
-                    %(is_dealer)s,
                     %(created_at)s,
                     %(active_at)s
                 )""")
@@ -53,7 +51,6 @@ class AdvertisementStore:
                 'images': a.images,
                 'year': a.year,
                 'engine': a.engine,
-                'is_dealer': a.is_dealer,
                 'created_at': datetime.now(),
                 'active_at': datetime.now()}
         with self.connection.cursor() as cursor:
@@ -100,25 +97,25 @@ class AdvertisementStore:
             self.connection.commit()
         return result
 
-    def update_lead(self, r: str, status: Optional[str] = None, images: Optional[str] = None, is_dealer: Optional[bool] = None,
-                    transmision: Optional[str] = None, fuel: Optional[str] = None, first_reg: Optional[str] = None,
-                    color: Optional[str] = None):#transmission, fuel, first_reg, color
-        data = ''
-        if status:
-            data += f"status = '{status}', "
-        if images:
-            data += f"images = '{images}', "
-        data += f"is_dealer = {1 if is_dealer else 0 }, "
-        if transmision:
-            data += f"transmission = '{transmision}', "
-        if transmision:
-            data += f"fuel = '{fuel}', "
-        if first_reg:
-            data += f"first_reg = '{first_reg}', "
-        if color:
-            data += f"color = '{color}', "
-
-        template = f"UPDATE ads SET {data}active_at = '{datetime.now()}' WHERE provider_lead_url ='{r}'"
+    def update_lead(self, request: list[UpdateAdRequest]):
         with self.connection.cursor() as cursor:
-            cursor.execute(template)
-            self.connection.commit()
+            for row in request:
+                data = ''
+                if row.status:
+                    data += f"status = '{row.status}', "
+                if row.images:
+                    data += f"images = '{row.images}', "
+                data += f"is_dealer = {1 if row.is_dealer else 0 }, "
+                if row.transmission:
+                    data += f"transmission = '{row.transmission}', "
+                if row.fuel:
+                    data += f"fuel = '{row.fuel}', "
+                if row.first_reg:
+                    data += f"first_reg = '{row.first_reg}', "
+                if row.color:
+                    data += f"color = '{row.color}', "
+
+                template = f"UPDATE ads SET {data}active_at = '{datetime.now()}' WHERE provider_lead_url ='{row.url}'"
+            
+                cursor.execute(template)
+        self.connection.commit()

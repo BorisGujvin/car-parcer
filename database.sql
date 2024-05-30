@@ -21,5 +21,6 @@ CREATE TABLE IF NOT EXISTS ads(
     created_at TIMESTAMP,    
     active_at TIMESTAMP,
     PRIMARY KEY (`id`) USING BTREE,
-    CONSTRAINT uniq UNIQUE (provider_id, provider_name)
+    CONSTRAINT uniq_id_name UNIQUE (provider_id, provider_name),
+    CONSTRAINT unique_url UNIQUE (provider_lead_url)
 );

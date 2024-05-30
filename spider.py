@@ -2,27 +2,14 @@ from store import AdvertisementStore
 from threading import Thread, current_thread, Lock
 from parsers.mobile_de import MobileDeParser
 import time
-import paramiko
-from sshtunnel import SSHTunnelForwarder
-import pymysql
+from model import UpdateAdRequest
+from db_connection import get_connection
 
 lock = Lock()
 
 def worker():
     parser = MobileDeParser()
-    mypkey = paramiko.RSAKey.from_private_key_file('./.ssh/id_rsa', 'K0r0stel!')
-    tunnel = SSHTunnelForwarder(('68.183.217.93', 22),
-        ssh_username='forge',
-        ssh_pkey=mypkey,
-        remote_bind_address=('127.0.0.1', 3306)
-    )
-    tunnel.start()
-    connection = pymysql.connect(
-        host='127.0.0.1',
-        user='forge',
-        passwd='nSvGDEPZwsE625VhpPco', db='forge',
-        port=tunnel.local_bind_port
-    )
+    connection = get_connection()
     store = AdvertisementStore(connection=connection)
 
     
@@ -38,18 +25,19 @@ def worker():
             continue
         scrap_time = 0
         store_time = 0
+        updates = []
         for r in request:
             output = current_thread().name + ': ' + r + ' '
             start = time.time()
-            status, images, is_dealer, transmission, fuel, first_reg, color = parser.update_info(r)
-            output += ' : ' + status
+            request = parser.update_info(r)
+            updates.append(request)
+            output += ' : ' + request.status
             scrap_iter_time = time.time()
-            store.update_lead(r, status, images, is_dealer, transmission, fuel, first_reg, color)
             store_iter_time = time.time()
             print(output)
             scrap_time += scrap_iter_time - start
             store_time += store_iter_time - scrap_iter_time
-
+        store.update_lead(updates)
         finish = time.time()
         print (current_thread().name + ': ' + f"Time: {finish - start1}: get task: {get_task_time}, scrap:{scrap_time}, store: {store_time}")
 

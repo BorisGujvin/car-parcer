@@ -4,6 +4,7 @@ import paramiko
 from sshtunnel import SSHTunnelForwarder
 from model import Advertisement
 from store import AdvertisementStore
+from db_connection import get_connection
 
 class Writer(ABC):
     def write(self, a: Advertisement) -> None:
@@ -37,28 +38,14 @@ class CSVWriter(Writer):
 
 class MySQLWriter(Writer):
     def __init__(self):
-        mypkey = paramiko.RSAKey.from_private_key_file('C:/Users/think/.ssh/id_rsa', 'K0r0stel!')
-        self.tunnel = SSHTunnelForwarder(('68.183.217.93', 22),
-            ssh_username='forge',
-            ssh_pkey=mypkey,
-            remote_bind_address=('127.0.0.1', 3306)
-        )
-        self.tunnel.start()
-        self.connection = pymysql.connect(
-            host='127.0.0.1',
-            user='forge',
-            passwd='nSvGDEPZwsE625VhpPco', db='forge',
-            port=self.tunnel.local_bind_port
-        )
+        self.connection = get_connection()
         self.store = AdvertisementStore(self.connection)
-
     def exit(self) -> None:
         self.connection.close()
 
     def write(self, a: Advertisement) -> None:
         if self.store.search(a=a):
-            self.store.mark_active(a=a)
-            print(a.provider_id + ' updated')
+            print(a.provider_id + ' exist')
         else:
             self.store.create(a=a)
             print(a.provider_id + ' created')
