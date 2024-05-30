@@ -27,26 +27,34 @@ def worker():
 
     
     while True:
-        start = time.time()
+        start1 = time.time()
         with lock:
             request = store.get_tasks()
+        get_task_time = time.time() - start1
         if not request:
             print('No jobb')
             time.sleep(10)
             store.connection.commit()
             continue
+        scrap_time = 0
+        store_time = 0
         for r in request:
             output = current_thread().name + ': ' + r + ' '
             status, images, is_dealer, transmission, fuel, first_reg, color = parser.update_info(r)
             output += ' : ' + status
-            store.update_lead(r, status, images, is_dealer, transmission, fuel, first_reg, color)
+            scrap_iter_time = time.time()
+            store.update_lead(r, status, images, is_dealer)
+            store_iter_time = time.time()
             print(output)
+            scrap_time += scrap_iter_time - start
+            store_time += store_iter_time - scrap_iter_time
+
         finish = time.time()
-        print (f"Time: {finish - start}")
+        print (current_thread().name + ': ' + f"Time: {finish - start1}: get task: {get_task_time}, scrap:{scrap_time}, store: {store_time}")
 
 
 if __name__ == '__main__':
-    num_workers = 4
+    num_workers = 2
 
     for i in range(num_workers):
          t = Thread(target=worker)

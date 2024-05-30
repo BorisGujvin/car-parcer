@@ -1,6 +1,4 @@
 from abc import ABC
-from advertisement import AdvertisementTable
-from psycopg2 import sql, connect
 import pymysql
 import paramiko
 from sshtunnel import SSHTunnelForwarder
@@ -36,30 +34,6 @@ class CSVWriter(Writer):
             str(a.price_with_vat),
             '\n'])
         self.export_file.write(csv_row)
-
-
-class PostgreDBWriter(Writer):
-    def __init__(self):
-        self.connection = connect(
-            host='localhost',
-            user='postgres',
-            password=''
-        )
-
-    def exit(self) -> None:
-        pass
-
-    def write(self, a: Advertisement) -> None:
-        template = f"""INSERT INTO advertisements ({{}}) VALUES ({{}}) ON CONFLICT DO NOTHING"""
-        keys = AdvertisementTable.COLUMN_KEYS
-        values = [a.provider_id, a.provider_name, a.brand, a.car_name, a.year, a.mileage,
-                  a.price, 1 if a.is_dealer else 0, a.city, a.link]
-        keys_sql = sql.SQL(', ').join(map(sql.Identifier, keys))
-        values_sql = sql.SQL(', ').join(map(sql.Literal, values))
-        statement = sql.SQL(template).format(keys_sql, values_sql)
-        with self.connection as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(statement)
 
 class MySQLWriter(Writer):
     def __init__(self):
