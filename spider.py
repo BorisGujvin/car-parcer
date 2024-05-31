@@ -41,7 +41,7 @@ def worker():
         with lock2:
             store.update_lead(updates)
         finish = time.time()
-        store_time += finish + finish1
+        store_time = finish - finish1
         print (current_thread().name + ': ' + f"Time: {finish - start1}: get task: {get_task_time}, scrap:{scrap_time}, store: {store_time}")
 
 

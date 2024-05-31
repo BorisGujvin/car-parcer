@@ -49,13 +49,16 @@ class MobileDeParser(AbstractParser):
                 url = brand.attrs['href']
                 self.get_branch(url, brand_name)
 
-    def update_info(self, url) -> UpdateAdRequest:
+    def update_info(self, url) -> Optional[UpdateAdRequest]:
         self.driver.delete_all_cookies()
         self.get_selenium(url)
 
 #        self.driver.refresh()
         time.sleep(3)
-        show_page = self.driver.execute_script("return document.documentElement.outerHTML")
+        try:
+            show_page = self.driver.execute_script("return document.documentElement.outerHTML")
+        except Exception:
+            return
         root = BeautifulSoup(show_page, "html.parser")
         
         imgs = root.find_all('img', class_='thumbnail')
