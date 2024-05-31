@@ -30,6 +30,8 @@ def worker():
             output = current_thread().name + ': ' + r + ' '
             start = time.time()
             request = parser.update_info(r)
+            if not request:
+                continue
             updates.append(request)
             output += ' : ' + request.status
             scrap_iter_time = time.time()

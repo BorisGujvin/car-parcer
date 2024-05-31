@@ -50,9 +50,10 @@ class MobileDeParser(AbstractParser):
                 self.get_branch(url, brand_name)
 
     def update_info(self, url) -> UpdateAdRequest:
-        self.get_selenium(url)
         self.driver.delete_all_cookies()
-        self.driver.refresh()
+        self.get_selenium(url)
+
+#        self.driver.refresh()
         time.sleep(3)
         show_page = self.driver.execute_script("return document.documentElement.outerHTML")
         root = BeautifulSoup(show_page, "html.parser")

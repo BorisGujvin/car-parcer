@@ -27,6 +27,8 @@ def worker():
         for r in request:
             output = current_thread().name + ' : ' + r
             d = parser.update_info(r)
+            if not d:
+                continue
             updated.append(UpdateAdRequest(status=d.status, url=d.url))
             output += ' : ' + d.status
             print(output)
