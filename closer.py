@@ -4,6 +4,7 @@ from parsers.mobile_de import MobileDeParser
 import time
 from model import UpdateAdRequest
 from db_connection import get_connection
+from env import Env
 
 
 lock = Lock()
@@ -35,9 +36,8 @@ def worker():
 
 
 if __name__ == '__main__':
-    num_workers = 1
 
-    for i in range(num_workers):
+    for i in range(Env.THREADS):
          t = Thread(target=worker)
          t.name = 'Closer No ' + str(i)
          t.start()

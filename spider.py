@@ -4,7 +4,7 @@ from parsers.mobile_de import MobileDeParser
 import time
 from model import UpdateAdRequest
 from db_connection import get_connection
-
+from env import Env
 lock = Lock()
 lock2 = Lock()
 
@@ -25,7 +25,6 @@ def worker():
             store.connection.commit()
             continue
         scrap_time = 0
-        store_time = 0
         updates = []
         for r in request:
             output = current_thread().name + ': ' + r + ' '
@@ -34,20 +33,19 @@ def worker():
             updates.append(request)
             output += ' : ' + request.status
             scrap_iter_time = time.time()
-            store_iter_time = time.time()
             print(output)
             scrap_time += scrap_iter_time - start
-            store_time += store_iter_time - scrap_iter_time
+        finish1 = time.time()
         with lock2:
             store.update_lead(updates)
         finish = time.time()
+        store_time += finish + finish1
         print (current_thread().name + ': ' + f"Time: {finish - start1}: get task: {get_task_time}, scrap:{scrap_time}, store: {store_time}")
 
 
 if __name__ == '__main__':
-    num_workers = 4
 
-    for i in range(num_workers):
+    for i in range(Env.THREADS):
          t = Thread(target=worker)
          t.name = 'Spider No ' + str(i)
          t.start()

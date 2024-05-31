@@ -1,6 +1,6 @@
 from typing import Optional
 from model import Advertisement, UpdateAdRequest
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class AdvertisementStore:
@@ -85,7 +85,8 @@ class AdvertisementStore:
         
 
     def get_old_tasks(self):
-        template1 = "SELECT provider_lead_url FROM ads WHERE status = 'active' order by active_at LIMIT 10"
+        three_hour = datetime.now() - timedelta(hours=4)
+        template1 = f"SELECT provider_lead_url FROM ads WHERE status = 'active' and created_at > '{three_hour}' order by active_at LIMIT 10"
         with self.connection.cursor() as cursor:
             cursor.execute(template1)
             result = cursor.fetchall()
