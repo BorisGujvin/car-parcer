@@ -6,6 +6,7 @@ from model import UpdateAdRequest
 from db_connection import get_connection
 
 lock = Lock()
+lock2 = Lock()
 
 def worker():
     parser = MobileDeParser()
@@ -37,7 +38,8 @@ def worker():
             print(output)
             scrap_time += scrap_iter_time - start
             store_time += store_iter_time - scrap_iter_time
-        store.update_lead(updates)
+        with lock2:
+            store.update_lead(updates)
         finish = time.time()
         print (current_thread().name + ': ' + f"Time: {finish - start1}: get task: {get_task_time}, scrap:{scrap_time}, store: {store_time}")
 
