@@ -176,12 +176,12 @@ class MobileDeParser(AbstractParser):
             ekraned_name = name.replace("'", r"\'")
             try:
                 xpath = f"//h2[text()='{ekraned_name}']"    
-                icon_element = self.driver.find_element(By.XPATH, xpath)
+                icon_element = self.driver.find_element(By.XPATH, xpath)      
+                parent = icon_element.find_element(By.XPATH, '../../..')
+                self.driver.execute_script("arguments[0].scrollIntoView();", parent)
+                parent.click()
             except Exception:
                 return
-            parent = icon_element.find_element(By.XPATH, '../../..')
-            self.driver.execute_script("arguments[0].scrollIntoView();", parent)
-            parent.click()
             windows = self.driver.window_handles
             new_window = windows[-1]
             self.driver.switch_to.window(new_window)
