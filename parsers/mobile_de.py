@@ -47,7 +47,12 @@ class MobileDeParser(AbstractParser):
             for brand in group.parent.find_all('a'):
                 brand_name = brand.next
                 url = brand.attrs['href']
-                self.get_branch(url, brand_name)
+                try:
+                    self.get_branch(url, brand_name)
+                except NeedResetException:
+                    print('     ===== NeedResetException =====')
+                    self.create_driver()
+                    continue
 
     def update_info(self, url) -> Optional[UpdateAdRequest]:
         self.driver.delete_all_cookies()

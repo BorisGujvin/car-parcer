@@ -13,19 +13,21 @@ def worker():
     parser = MobileDeParser()
     connection = get_connection()
     store = AdvertisementStore(connection=connection)
+    branch = current_thread().name + ' : '
    
     while True:
         start = time.time()
         with lock:
             request = store.get_old_tasks()
         if not request:
-            print('No active ads')
+            output = branch + 'No active ads'
+            print(output)
             time.sleep(10)
             store.connection.commit()
             continue
         updated = []
         for r in request:
-            output = current_thread().name + ' : ' + r
+            output = branch + r
             d = parser.update_info(r)
             if not d:
                 continue

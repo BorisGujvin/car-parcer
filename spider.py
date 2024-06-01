@@ -12,7 +12,7 @@ def worker():
     parser = MobileDeParser()
     connection = get_connection()
     store = AdvertisementStore(connection=connection)
-
+    branch = current_thread().name + ' : '
     
     while True:
         start1 = time.time()
@@ -20,14 +20,15 @@ def worker():
             request = store.get_tasks()
         get_task_time = time.time() - start1
         if not request:
-            print('No jobb')
+            output = branch + 'No jobb'
+            print(output)
             time.sleep(10)
             store.connection.commit()
             continue
         scrap_time = 0
         updates = []
         for r in request:
-            output = current_thread().name + ': ' + r + ' '
+            output = branch + r + ' '
             start = time.time()
             request = parser.update_info(r)
             if not request:
