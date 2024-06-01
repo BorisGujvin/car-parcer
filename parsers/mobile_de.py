@@ -59,7 +59,7 @@ class MobileDeParser(AbstractParser):
         self.get_selenium(url)
 
 #        self.driver.refresh()
-        time.sleep(3)
+        time.sleep(4)
         try:
             show_page = self.driver.execute_script("return document.documentElement.outerHTML")
         except Exception:

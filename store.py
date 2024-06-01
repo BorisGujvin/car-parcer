@@ -106,7 +106,8 @@ class AdvertisementStore:
                     data += f"status = '{row.status}', "
                 if row.images:
                     data += f"images = '{row.images}', "
-                data += f"is_dealer = {1 if row.is_dealer else 0 }, "
+                if row.is_dealer is not None:
+                    data += f"is_dealer = {1 if row.is_dealer else 0 }, "
                 if row.transmission:
                     data += f"transmission = '{row.transmission}', "
                 if row.fuel:
