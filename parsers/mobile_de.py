@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 from exception import NeedResetException
 from .abstract import AbstractParser
 from exporter import Writer
@@ -12,21 +12,24 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import re
 import json
-from multiprocessing import Process
+
 # https://github.com/password123456/setup-selenium-with-chrome-driver-on-ubuntu_debian
+
 
 class MobileDeParser(AbstractParser):
 
     def __init__(self) -> None:
+        self.driver = None
+        self.exporter = None
         print('mobile.de')
-        #cService = webdriver.ChromeService(executable_path='chromedriver.exe')
         self.create_driver()
 
     def create_driver(self):
         options = Options()
         options.add_argument('--headless=new')
         options.add_argument("--window-size=2560,1440")
-        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.4147.125 Safari/537.36")
+        options.add_argument('user-agent=Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, '
+                             'like Gecko) Chrome/125.0.4147.125 Safari/537.36')
         self.driver = webdriver.Chrome(options=options)
         self.driver.set_page_load_timeout(30)
         
@@ -57,8 +60,6 @@ class MobileDeParser(AbstractParser):
     def update_info(self, url) -> Optional[UpdateAdRequest]:
         self.driver.delete_all_cookies()
         self.get_selenium(url)
-
-#        self.driver.refresh()
         time.sleep(4)
         try:
             show_page = self.driver.execute_script("return document.documentElement.outerHTML")
@@ -99,8 +100,7 @@ class MobileDeParser(AbstractParser):
                                 first_reg=first_reg,
                                 color=color)
 
-
-    def get_selenium(self, href: str):
+    def get_selenium(self, href: str) -> Any:
         try:
             self.driver.get(href)
             return self.driver.execute_script("return document.documentElement.outerHTML")

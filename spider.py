@@ -2,9 +2,10 @@ from store import AdvertisementStore
 from threading import Thread, current_thread, Lock
 from parsers.mobile_de import MobileDeParser
 import time
-from model import UpdateAdRequest
 from db_connection import get_connection
 from env import Env
+
+
 lock = Lock()
 lock2 = Lock()
 

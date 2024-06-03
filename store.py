@@ -78,22 +78,35 @@ class AdvertisementStore:
             result = [r[0] for r in result] if result else None
             if not result or len(result) < 10:
                 return
-            template2 = f"UPDATE ads SET status = 'checking' WHERE provider_lead_url IN ('{'\', \''.join(result)}')"        
+            id_list = "', '".join(result)
+            template2 = f"UPDATE ads SET status = 'checking' WHERE provider_lead_url IN ('{id_list}')"
             cursor.execute(template2)
             self.connection.commit()
         return result
-        
 
-    def get_old_tasks(self):
-        three_hour = datetime.now() - timedelta(hours=4)
-        template1 = f"SELECT provider_lead_url FROM ads WHERE status = 'active' and created_at > '{three_hour}' order by active_at LIMIT 10"
+    def count_old_ads(self, after_time: datetime, before_time: datetime):
+        template = f"""SELECT COUNT(*) FROM ads WHERE status = 'active' 
+                        and created_at > '{after_time}' 
+                        and created_at < '{before_time}'"""
+        with self.connection.cursor() as cursor:
+            cursor.execute(template)
+            return cursor.fetchone()[0]
+
+    def get_old_tasks(self, after_time: Optional[datetime] = None, before_time: Optional[datetime] = None, count: int = 10):
+        after = after_time or datetime.now() - timedelta(hours=4)
+        before = before_time or datetime.now()
+        template1 = f"""SELECT provider_lead_url FROM ads WHERE status = 'active' 
+                        and created_at > '{after}' 
+                        and created_at < '{before}'
+                        order by active_at LIMIT {count}"""
         with self.connection.cursor() as cursor:
             cursor.execute(template1)
             result = cursor.fetchall()
             result = [r[0] for r in result] if result else None
-            if not result or len(result) < 10:
+            if not result or len(result) < count:
                 return
-            template2 = f"UPDATE ads SET status = 'checking' WHERE provider_lead_url IN ('{'\', \''.join(result)}')"        
+            id_list = "', '".join(result)
+            template2 = f"UPDATE ads SET status = 'checking_for_closing' WHERE provider_lead_url IN ('{id_list}')"
             cursor.execute(template2)
             self.connection.commit()
         return result
@@ -107,7 +120,7 @@ class AdvertisementStore:
                 if row.images:
                     data += f"images = '{row.images}', "
                 if row.is_dealer is not None:
-                    data += f"is_dealer = {1 if row.is_dealer else 0 }, "
+                    data += f"is_dealer = {1 if row.is_dealer else 0}, "
                 if row.transmission:
                     data += f"transmission = '{row.transmission}', "
                 if row.fuel:
