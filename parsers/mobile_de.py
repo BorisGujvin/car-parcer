@@ -26,10 +26,10 @@ class MobileDeParser(AbstractParser):
 
     def create_driver(self):
         options = Options()
-        options.add_argument('--headless=new')
-        options.add_argument("--window-size=2560,1440")
+     #   options.add_argument('--headless=new')
+        options.add_argument("--window-size=1980,1080")
         options.add_argument('user-agent=Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, '
-                             'like Gecko) Chrome/125.0.4147.125 Safari/537.36')
+                             'like Gecko) Chrome/126.0.4147.125 Safari/537.36')
         self.driver = webdriver.Chrome(options=options)
         self.driver.set_page_load_timeout(30)
         
@@ -140,8 +140,9 @@ class MobileDeParser(AbstractParser):
         try:
             self.driver.execute_script("arguments[0].scrollIntoView();", button_next)
             self.driver.execute_script("window.scrollBy(0, -100);")
+            self.driver.delete_all_cookies()
             button_next.click()
-            time.sleep(7)
+            time.sleep(1)
             self.agree()
             html = self.driver.execute_script("return document.documentElement.outerHTML")
             current_url = str(self.driver.execute_script('return window.location.href'))
