@@ -26,7 +26,7 @@ class MobileDeParser(AbstractParser):
 
     def create_driver(self):
         options = Options()
-     #   options.add_argument('--headless=new')
+        options.add_argument('--headless=new')
         options.add_argument("--window-size=1980,1080")
         options.add_argument('user-agent=Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, '
                              'like Gecko) Chrome/126.0.4147.125 Safari/537.36')
