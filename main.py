@@ -9,6 +9,8 @@ from exception import NeedResetException
 
 if __name__ == '__main__':
     arg = sys.argv[-1]
+    if arg == 'main.py':
+        arg = 'mobile.de'
     while True:
         if arg == 'blocket':
             parser = BlocketParser()
@@ -29,6 +31,9 @@ if __name__ == '__main__':
             exporter.exit()
         except NeedResetException:
             print('TimeOut Exception')
+            continue
+        except Exception as e:
+            print(e)
             continue
         print('successfully finished')
         print (f"Time: {finish - start}")
